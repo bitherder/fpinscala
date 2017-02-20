@@ -36,7 +36,13 @@ object MyModule {
 
   // Exercise 1: Write a function to compute the nth fibonacci number
 
-  def fib(n: Int): Int = ???
+  def fib(n: Int): Int = {
+    def go(i: Int, prev: Int, next: Int): Int = {
+      if(i == n) prev else go(i + 1, next, prev + next)
+    }
+
+    go(0, 0, 1)
+  }
 
   // This definition and `formatAbs` are very similar..
   private def formatFactorial(n: Int) = {
@@ -140,7 +146,16 @@ object PolymorphicFunctions {
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = {
+    def loop(prev: A, i: Int): Boolean = {
+      if(i == as.size) true else {
+        val it = as(i)
+        if(gt(it, prev)) loop(it, i+1) else false
+      }
+    }
+
+    if(as.isEmpty) true else loop(as(0), 1)
+  }
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
@@ -175,4 +190,16 @@ object PolymorphicFunctions {
 
   def compose[A,B,C](f: B => C, g: A => B): A => C =
     ???
+}
+
+object TestPolymorphic {
+  import PolymorphicFunctions._
+
+  def main(args: Array[String]): Unit = {
+    println("expect (1, 2, 3) to be sorted: %b".format(isSorted(Array(1, 2, 3), (x: Int, y: Int) => x > y)))
+    println("expect (1, 3, 2) not to be sorted: %b".format(isSorted(Array(1, 3, 2), (x: Int, y: Int) => x > y)))
+    println("expect () to be sorted: %b".format(isSorted(Array(), (x: Int, y: Int) => x > y)))
+    println("expect (1) to be sorted: %b".format(isSorted(Array(1), (x: Int, y: Int) => x > y)))
+    println("expect (\"abc\", \"pdq\", \"xyz\") to be sorted: %b".format(isSorted(Array("abc", "pdq", "xyz"), (x: String, y: String) => x > y)))
+  }
 }
