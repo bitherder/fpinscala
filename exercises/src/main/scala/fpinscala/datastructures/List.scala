@@ -49,20 +49,62 @@ object List { // `List` companion object. Contains functions for creating and wo
   def product2(ns: List[Double]) =
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
+  def tail[A](l: List[A]): List[A] = l match {
+    case Nil => sys.error("can't take the tail of an empty list")
+    case Cons(h, t) => t
+  }
 
-  def tail[A](l: List[A]): List[A] = ???
+  def setHead[A](l: List[A], h: A): List[A] = l match {
+    case Nil => sys.error("can't replace the head of an empty list")
+    case Cons(_, t) => Cons(h, t)
+  }
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  def drop[A](l: List[A], n: Int): List[A] =
+    if(n == 0) l
+    else l match {
+      case Nil => Nil
+      case Cons(h, t) => drop(t, n - 1)
+    }
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Cons(h, t) if f(h) => dropWile(t, f)
+    case _ => l
+  }
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
+  def reverse[A](l: List[A]): List[A] = {
+    def loop(ex: List[A], acc: List[A]): List[A] = ex match {
+      case Nil => acc
+      case Cons(h, t) => loop(t, Cons(h, acc))
+    }
 
-  def init[A](l: List[A]): List[A] = ???
+    loop(l, Nil)
+  }
 
-  def length[A](l: List[A]): Int = ???
+  def init[A](l: List[A]): List[A] = {
+    def loop(ex: List[A], acc: List[A]): List[A] = ex match {
+      case Nil => sys.error("you can't delete the last element of an empty list")
+      case Cons(h, Nil) => acc
+      case Cons(h, t) => loop(t, Cons(h, acc))
+    }
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
+    reverse loop(l, Nil)
+  }
+
+  def length[A](l: List[A]): Int = {
+    foldRight[A, Int](l, 0)((_, acc) => (acc + 1))
+  }
+
+  @annotation.tailrec
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(h, t) => foldLeft(t, f(z, h))(f)
+  }
+
+  def leftSum(l: List[Int]) = foldLeft(l, 0)(_ + _)
+  def leftProduct(l: List[Double]) = foldLeft(l, 1.0)(_ * _)
+  def leftLength(l: List[Int]) = foldLeft(l, 0)((acc, _) => acc + 1)
+
+  def leftReverse[A](l: List[A]) = foldLeft[A, List[A]](l, List[A]())((acc, a) => Cons(a, acc))
 
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 }
