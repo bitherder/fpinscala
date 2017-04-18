@@ -17,11 +17,22 @@ trait Stream[+A] {
     case Empty => None
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
   }
-  def take(n: Int): Stream[A] = ???
+  def take(n: Int): Stream[A] = (n, this) match {
+    case (0, _) => empty
+    case (_, Empty) => empty
+    case (n, Cons(h, t)) => cons(h(), t().take(n - 1))
+  }
 
-  def drop(n: Int): Stream[A] = ???
+  def drop(n: Int): Stream[A] = (n, this) match {
+    case (0, xs) => xs
+    case (_, Empty) => empty
+    case (x, Cons(_, t)) => t().drop(x - 1)
+  }
 
-  def takeWhile(p: A => Boolean): Stream[A] = ???
+  def takeWhile(p: A => Boolean): Stream[A] = this match {
+    case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
+    case _ => empty
+  }
 
   def forAll(p: A => Boolean): Boolean = ???
 
@@ -31,6 +42,15 @@ trait Stream[+A] {
   // writing your own function signatures.
 
   def startsWith[B](s: Stream[B]): Boolean = ???
+
+  def toList(): List[A] =  {
+    def loop(xs: Stream[A], acc: List[A]): List[A] = xs match {
+      case Empty => acc
+      case Cons(h, t) => loop(t(), h() :: acc)
+    }
+
+    loop(this, List[A]()).reverse
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
