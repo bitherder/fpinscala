@@ -1,8 +1,9 @@
 import fpinscala.laziness._
 
 val s = Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+val ones: Stream[Int] = Stream.cons(1, ones)
 
-s.toList()
+  s.toList()
 
 s.take(5)
 
@@ -29,6 +30,11 @@ s.filter((x) => x % 2 == 0).toList()
 s.append(s).toList()
 
 s.flatMap(x => Stream(x)).toList()
+
+ones.take(10).toList()
+
+ones.exists(_ % 2 != 0)
+
 
 
 
