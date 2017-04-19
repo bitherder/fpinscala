@@ -12,5 +12,16 @@ s.drop(5).toList()
 
 s.takeWhile(_ < 5).toList()
 
+s.forAll(_ < 100)
+
+s.forAll(_ < 5)
+
+s.forAll(_ < 11)
+
+s.headOption
+
+Stream.empty.headOption
+
+
 
 
