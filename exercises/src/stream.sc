@@ -22,6 +22,13 @@ s.headOption
 
 Stream.empty.headOption
 
+s.map(x => x*x).toList()
+
+s.filter((x) => x % 2 == 0).toList()
+
+s.append(s).toList()
+
+s.flatMap(x => Stream(x)).toList()
 
 
 
