@@ -62,7 +62,11 @@ trait Stream[+A] {
 
     loop(this, List[A]()).reverse
   }
+
+  def listOf(n: Int): List[A] = this.take(n).toList()
+
 }
+
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
@@ -80,7 +84,25 @@ object Stream {
     else cons(as.head, apply(as.tail: _*))
 
   val ones: Stream[Int] = Stream.cons(1, ones)
-  def from(n: Int): Stream[Int] = ???
 
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
+  // def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
+  def constant[A](a: A): Stream[A] = {
+    lazy val tail: Stream[A] = Cons(() => a, () => tail)
+    tail
+  }
+
+  def from(n: Int): Stream[Int] = Cons(() => n, () => from(n + 1))
+
+  def fibs() = {
+    def loop(x: Int, y: Int): Stream[Int] = {
+      Stream.cons(x, loop(y, x + y))
+    }
+
+    loop(0, 1)
+  }
+
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None => empty[A]
+    case Some((a: A, s: S)) => cons(a, unfold(s)(f))
+  }
 }
