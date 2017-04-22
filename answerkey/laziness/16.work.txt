@@ -1,0 +1,98 @@
+
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    foldRight((z, Stream(z)))((a, p0) => {
+      // p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
+      lazy val p1 = p0
+      val b2 = f(a, p1._1)
+      (b2, cons(b2, p1._2))
+    })._2
+
+  def foldRight[B](z: => B)(f: (A, => B) => B): B =
+    this match {
+      case Cons(h,t) => f(h(), t().foldRight(z)(f))
+      case _ => z
+    }
+
+Stream(1, 2, 3).scanRight(0)(_ + _)
+
+Stream(1, 2, 3).foldRight((0, Stream(0)))((a, p) => {
+      (a + p._1, cons(a + p._1, p._2))
+    })._2
+
+(
+  1 + Stream(2, 3).foldRight((0, Stream(0)))._1,
+  cons(
+    1 + Stream(2, 3).foldRight((0, Stream(0)))._1,
+    Stream(2, 3).foldRight((0, Stream(0)))._2
+  )
+)
+
+(
+  1 + Stream(2, 3).foldRight((0, Stream(0)))._1,
+  cons(
+    1 + Stream(2, 3).foldRight((0, Stream(0)))._1,
+    Stream(2, 3).foldRight((0, Stream(0)))._2
+  )
+)
+
+Stream(2, 3).foldRight((0, Stream(0)))
+
+(
+  2 + Stream(3).foldRight((0, Stream(0)))._1,
+  cons(
+    2 + Stream(3).foldRight((0, Stream(0)))._1,
+    Stream(3).foldRight((0, Stream(0)))._2
+  )
+)
+
+Stream(3).foldRight((0, Stream(0)))
+
+(
+  3 + Stream().foldRight((0, Stream(0)))._1,
+  cons(
+    3 + Stream().foldRight((0, Stream(0)))._1,
+    Stream().foldRight((0, Stream(0)))._2
+  )
+)
+
+Stream().foldRight((0, Stream(0)))
+
+(0, Stream(0))
+
+---
+(
+  3 + (0, Stream(0))._1,
+  cons(
+    3 + (0, Stream(0))._1,
+    (0, Stream(0))._2
+  )
+)
+
+(3, cons(3, Stream(0)))
+(3, Stream(3, 0)))
+
+(
+  2 + (3, Stream(3, 0)))._1,
+  cons(
+    2 + (3, Stream(3, 0)))._1,
+    (3, Stream(3, 0))._2
+  )
+)
+
+(5, cons(5, Stream(3, 0)))
+(5, Stream(5, 3, 0))
+
+(
+  1 + (5, Stream(5, 3, 0))._1,
+  cons(
+    1 + (5, Stream(5, 3, 0))._1,
+    (5, Stream(5, 3, 0))._2
+  )
+)
+
+(6, cons(6, Stream(5, 3, 0)))
+(6, Stream(6, 5, 3, 0)))
+
+---
+
+Stream(6, 5, 3, 0)

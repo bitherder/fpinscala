@@ -75,7 +75,9 @@ s.startsWith(Stream.from(1).take(11))
 Stream.from(1).startsWith(Stream.from(1).take(11))
 Stream.from(1).startsWith(Stream(1, 2, 3, 4, 5, 6, 6))
 
-s.tails.toList.map(_.toList)
-s.scanRight(0)(_ + _).toList
-s.scanRight(Stream.empty[Int])((a, b) => Stream.cons(a, b)).toList.map(_.toList)
+s.tails.toList().map(_.toList())
+s.scanRight(0)(_ + _).toList()
+s.scanRight(Stream.empty[Int])((a, b) => Stream.cons(a, b))
+  .toList().map(_.toList())
+Stream(1, 2, 3).scanRight(0)(_ + _).toList()
 

@@ -106,8 +106,12 @@ trait Stream[+A] {
     foldRight((z, Stream(z)))((a, p0) => {
       // p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
       lazy val p1 = p0
-      val b2 = f(a, p1._1)
-      (b2, cons(b2, p1._2))
+      p1 match {
+        case (elem, stream) => {
+          val b2 = f(a, elem)
+          (b2, cons(b2, stream))
+        }
+      }
     })._2
 
   def toList(): List[A] =  {
