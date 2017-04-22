@@ -88,6 +88,28 @@ trait Stream[+A] {
       .takeWhile(_._2.isDefined) // { case (_, Some(_)) => true; case _ => false }.
       .forAll{ case (a, b) => a == b }
 
+  def tails: Stream[Stream[A]] = unfold(this)
+  {
+    case Empty => None
+    case s => Some(s, s drop 1)
+  } append Stream(empty)
+
+  def hasSubsequence[A](s: Stream[A]): Boolean = tails exists (_ startsWith s)
+
+   //  def scanRight[B](z: => B)(f: (A, => B) => B): B = unfold[B, Option[Stream[A]]](Some(this))
+   //  {
+   //    case Some(Empty) => Some((z, None))
+   //    case Some(Cons(h, t)) => Some((f(h(), t().scanRight(z)(f)), Some(t())))
+   //  }
+
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    foldRight((z, Stream(z)))((a, p0) => {
+      // p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
+      lazy val p1 = p0
+      val b2 = f(a, p1._1)
+      (b2, cons(b2, p1._2))
+    })._2
+
   def toList(): List[A] =  {
     def loop(xs: Stream[A], acc: List[A]): List[A] = xs match {
       case Empty => acc
