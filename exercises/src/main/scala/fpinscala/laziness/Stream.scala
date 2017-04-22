@@ -9,7 +9,7 @@ trait Stream[+A] {
       case _ => z
     }
 
-  def exists(p: A => Boolean): Boolean = 
+  def exists(p: A => Boolean): Boolean =
     foldRight(false)((a, b) => p(a) || b) // Here `b` is the unevaluated recursive step that folds the tail of the stream. If `p(a)` returns `true`, `b` will never be evaluated and the computation terminates early.
 
   @annotation.tailrec
@@ -30,7 +30,8 @@ trait Stream[+A] {
     }
   }
 
-  def drop(n: Int): Stream[A] = (n, this) match {
+  @annotation.tailrec
+  final def drop(n: Int): Stream[A] = (n, this) match {
     case (0, xs) => xs
     case (_, Empty) => empty
     case (x, Cons(_, t)) => t().drop(x - 1)
@@ -54,7 +55,7 @@ trait Stream[+A] {
     }
   }
 
-  def forAll(p: A => Boolean): Boolean = foldRight(false)((a, b) => p(a) && b)
+  def forAll(p: A => Boolean): Boolean = foldRight(true)((a, b) => p(a) && b)
 
   def headOption: Option[A] = foldRight(None: Option[A])((a, _) => Some(a))
 
@@ -82,7 +83,10 @@ trait Stream[+A] {
     case _ => None
   }
 
-  def startsWith[B](s: Stream[B]): Boolean = ???
+  def startsWith[B](s: Stream[B]): Boolean =
+    zipAll(s)
+      .takeWhile(_._2.isDefined) // { case (_, Some(_)) => true; case _ => false }.
+      .forAll{ case (a, b) => a == b }
 
   def toList(): List[A] =  {
     def loop(xs: Stream[A], acc: List[A]): List[A] = xs match {
@@ -113,6 +117,11 @@ object Stream {
     if (as.isEmpty) empty 
     else cons(as.head, apply(as.tail: _*))
 
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None => empty[A]
+    case Some((a: A, s: S)) => cons(a, unfold(s)(f))
+  }
+
   // val ones: Stream[Int] = Stream.cons(1, ones)
   val ones: Stream[Int] = unfold(1)(_ => Some((1, 1)))
 
@@ -135,9 +144,4 @@ object Stream {
 //  }
 
   def fibs(): Stream[Int] = unfold((0, 1))( { case (x, y) => Some((x, (y, x + y))) } )
-
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
-    case None => empty[A]
-    case Some((a: A, s: S)) => cons(a, unfold(s)(f))
-  }
 }

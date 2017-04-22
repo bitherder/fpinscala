@@ -60,3 +60,20 @@ e.zipAll(Stream.from(1)).listOf(10)
 Stream.fibs.zipAll(e).listOf(10)
 s.zipAll(Stream.from(1)).listOf(20)
 Stream.fibs.zipAll(s).listOf(20)
+
+e.startsWith(e)
+e.startsWith(s)
+s.startsWith(s)
+
+e.startsWith(e)
+e.startsWith(s)
+s.startsWith(e)
+s.startsWith(s)
+Stream.from(1).startsWith(s)
+s.startsWith(Stream.from(1).take(10))
+s.startsWith(Stream.from(1).take(11))
+Stream.from(1).startsWith(Stream.from(1).take(11))
+Stream.from(1).startsWith(Stream(1, 2, 3, 4, 5, 6, 6))
+
+
+
