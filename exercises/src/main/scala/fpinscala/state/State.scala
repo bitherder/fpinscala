@@ -35,6 +35,13 @@ object RNG {
     (value, newRng)
   }
 
+  def nonNegativeIntLessThan(limit: Int): Rand[Int] = {
+    flatMap(nonNegativeInt){ i =>
+      val mod = i % limit
+      if(i + (limit - 1) - mod >= 0) unit(mod) else nonNegativeIntLessThan(limit)
+    }
+  }
+
   //def double(rng: RNG): (Double, RNG) = {
   //  val (intVal, newRng) = nonNegativeInt(rng: RNG)
   //  (intVal.toDouble / (Int.MaxValue + 1), newRng)
@@ -87,7 +94,12 @@ object RNG {
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldRight(unit(List.empty[A]))(map2(_, _)(_ :: _))
 
-  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
+  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+    rng => {
+      val (fa, frng) = f(rng)
+      g(fa)(frng)
+    }
+  }
 }
 
 case class State[S,+A](run: S => (A, S)) {
