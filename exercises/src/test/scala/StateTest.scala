@@ -52,7 +52,7 @@ class StateTest extends FunSpec with Matchers with GeneratorDrivenPropertyChecks
   }
 
   describe("nonNegativeInt") {
-    it("is less than limit") {
+    it("is less than max integer value") {
       forAll { l: Long => { assert(RNG.nonNegativeInt(RNG.Simple(l))._1 < Int.MaxValue) }}
     }
 
