@@ -1,5 +1,7 @@
 package fpinscala.state
 
+import fpinscala.state.RNG.Rand
+
 
 trait RNG {
   def nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.
@@ -93,7 +95,7 @@ object RNG {
 //  }
 
   def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
-    flatMap(ra){ a => flatMap(rb){ b => unit(f(a, b))}}
+    flatMap(ra)(a => flatMap(rb)(b => unit(f(a, b))))
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldRight(unit(List.empty[A]))(map2(_, _)(_ :: _))
@@ -107,12 +109,17 @@ object RNG {
 }
 
 case class State[S,+A](run: S => (A, S)) {
-  def map[B](f: A => B): State[S, B] =
-    ???
+  def map[B](f: A => B): State[S, B] = flatMap(a => State.unit(f(a)))
+
   def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
-    ???
-  def flatMap[B](f: A => State[S, B]): State[S, B] =
-    ???
+    flatMap(a => sb.map(b => f(a, b)))
+
+  def flatMap[B](f: A => State[S, B]): State[S, B] = {
+    State { initialState =>
+      val (a, newState) = run(initialState)
+      f(a).run(newState)
+    }
+  }
 }
 
 sealed trait Input
@@ -122,6 +129,11 @@ case object Turn extends Input
 case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 object State {
+  def unit[S, A](a: A): State[S, A] = State(state => (a, state))
+
+  def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] =
+    fs.foldRight(unit[S, List[A]](Nil))((a, b) => a.map2(b)((x, y) => x :: y))
+
   type Rand[A] = State[RNG, A]
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
 }
