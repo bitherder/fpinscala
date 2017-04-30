@@ -1,8 +1,5 @@
 package fpinscala.state
 
-import fpinscala.state.RNG.Rand
-
-
 trait RNG {
   def nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.
 }
@@ -126,7 +123,9 @@ sealed trait Input
 case object Coin extends Input
 case object Turn extends Input
 
-case class Machine(locked: Boolean, candies: Int, coins: Int)
+case class Machine(locked: Boolean, candies: Int, coins: Int) {
+  def values: (Int, Int) = (candies, coins)
+}
 
 object State {
   def unit[S, A](a: A): State[S, A] = State(state => (a, state))
@@ -135,5 +134,32 @@ object State {
     fs.foldRight(unit[S, List[A]](Nil))((a, b) => a.map2(b)((x, y) => x :: y))
 
   type Rand[A] = State[RNG, A]
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+
+  def modify[S](f: S => S): State[S, Unit] = for {
+    s <- get
+    _ <- set(f(s))
+  } yield ()
+
+  def get[S]: State[S, S] = State(s => (s, s))
+
+  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 }
+
+
+object CandyMachine {
+  type CandyMachine = State[Machine, (Int, Int)]
+
+  def processInput = (i: Input) => (m: Machine) => (i, m) match {
+    case (_, Machine(_, 0, _)) => m
+    case (Turn, Machine(true, _, _)) => m
+    case (Coin, Machine(false, _, _)) => m
+    case (Coin, Machine(true, candy, coins)) => Machine(locked = false, candy, coins + 1)
+    case (Turn, Machine(false, candy, coins)) => Machine(locked = true, candy - 1, coins)
+  }
+
+  def simulateMachine(inputs: List[Input]): CandyMachine = for {
+    _ <- State.sequence(inputs.map(i => (State.modify[Machine](processInput(i)))))
+    s <- State.get
+  } yield s.values
+}
+

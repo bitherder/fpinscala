@@ -81,6 +81,141 @@ class StateTest extends FunSpec with Matchers with GeneratorDrivenPropertyChecks
       }
     }
   }
+
+  describe("CandyMachine") {
+    describe("simulateMachine") {
+      describe("with candy") {
+        describe("and locked") {
+          describe("when a coin is entered") {
+            val newState = CandyMachine.simulateMachine(List(Coin)).run(Machine(locked = true, candies = 1, coins = 0))
+            val newMachine = newState._2
+
+            it("is unlocked by a coin") {
+              assert(!newMachine.locked)
+            }
+            it("has one more coin") {
+              assert(newMachine.coins == 1)
+            }
+            it("has the same number of candies") {
+              assert(newMachine.candies == 1)
+            }
+          }
+
+          describe("when turned") {
+            val newState = CandyMachine.simulateMachine(List(Turn)).run(Machine(locked = true, candies = 1, coins = 0))
+            val newMachine = newState._2
+
+            it("is locked") {
+              assert(newMachine.locked)
+            }
+            it("has the same number of coins") {
+              assert(newMachine.coins == 0)
+            }
+            it("has the same number of candies") {
+              assert(newMachine.candies == 1)
+            }
+          }
+        }
+
+        describe("and unlocked") {
+          describe("when a coin is entered") {
+            val newState = CandyMachine.simulateMachine(List(Coin)).run(Machine(locked = false, candies = 1, coins = 0))
+            val newMachine = newState._2
+
+            it("is unlocked by a coin") {
+              assert(!newMachine.locked)
+            }
+            it("has the same number of coins") {
+              assert(newMachine.coins == 0)
+            }
+            it("has the same number of candies") {
+              assert(newMachine.candies == 1)
+            }
+          }
+
+          describe("when turned") {
+            val newState = CandyMachine.simulateMachine(List(Turn)).run(Machine(locked = false, candies = 1, coins = 0))
+            val newMachine = newState._2
+
+            it("is locked") {
+              assert(newMachine.locked)
+            }
+            it("has the same number of coins") {
+              assert(newMachine.coins == 0)
+            }
+            it("has one less candy") {
+              assert(newMachine.candies == 0)
+            }
+          }
+        }
+      }
+
+      describe("without candy") {
+        describe("and locked") {
+          describe("when a coin is entered") {
+            val newState = CandyMachine.simulateMachine(List(Coin)).run(Machine(locked = true, candies = 0, coins = 0))
+            val newMachine = newState._2
+
+            it("remains locked") {
+              assert(newMachine.locked)
+            }
+            it("has the same number of coins") {
+              assert(newMachine.coins == 0)
+            }
+            it("has the same number of candies") {
+              assert(newMachine.candies == 0)
+            }
+          }
+
+          describe("when turned") {
+            val newState = CandyMachine.simulateMachine(List(Coin)).run(Machine(locked = true, candies = 0, coins = 0))
+            val newMachine = newState._2
+
+            it("remains locked") {
+              assert(newMachine.locked)
+            }
+            it("has the same number of coins") {
+              assert(newMachine.coins == 0)
+            }
+            it("has the same number of candies") {
+              assert(newMachine.candies == 0)
+            }
+          }
+        }
+
+        describe("and unlocked") {
+          describe("when a coin is entered") {
+            val newState = CandyMachine.simulateMachine(List(Coin)).run(Machine(locked = false, candies = 0, coins = 0))
+            val newMachine = newState._2
+
+            it("remains unlocked") {
+              assert(!newMachine.locked)
+            }
+            it("has same number of coins") {
+              assert(newMachine.coins == 0)
+            }
+            it("has same number of candies") {
+              assert(newMachine.candies == 0)
+            }
+          }
+
+          describe("when turned") {
+            val newState = CandyMachine.simulateMachine(List(Turn)).run(Machine(locked = false, candies = 0, coins = 0))
+            val newMachine = newState._2
+            it("remains unlocked") {
+              assert(!newMachine.locked)
+            }
+            it("has no more coins") {
+              assert(newMachine.coins == 0)
+            }
+            it("has same number of candies") {
+              assert(newMachine.candies == 0)
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 
